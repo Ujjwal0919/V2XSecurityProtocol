@@ -3,6 +3,7 @@ import os
 import socket, json
 from datetime import datetime, timezone, timedelta
 from rsu_helperfunction import *
+from rsu_data_transfer import *
 from colorama import Fore, Style
 
 
@@ -110,6 +111,7 @@ def handle_vehicle_authentication(vehicle_socket, data):
     ta_response = json.loads(ta_socket.recv(4096).decode())
     print(f"[RSU] Received Trusted Authority Response: {ta_response}")
     M3 = json.loads(decrypt_message(ta_response, shared_key_ta).decode())
+
     if rsu_authenticated == True:
         I3 = hashlib.sha256((rsu_credentials['SID'] + M3['N4'] + M3['v_ta_res'] + ta_response['T3']).encode()).hexdigest()
     else:
@@ -160,9 +162,11 @@ def handle_vehicle_authentication(vehicle_socket, data):
     save_vehicle_creds(vehicle_cred['V_SID'], vehicle_cred['V_Chall'])
     vehicle_socket.sendall(json.dumps(data_packet).encode())
     print(Fore.GREEN + f"*********** Authentication Complete ***********")
+
+
 def start_rsu_server():
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_socket.bind(('0.0.0.0', 8593))
+    server_socket.bind(('0.0.0.0', 8590))
     server_socket.listen()
     print("****************** RSU Server Started ****************")
     while True:
@@ -171,6 +175,10 @@ def start_rsu_server():
         if data['req_type'] == "auth_Request":
             print(f"[RSU] Received Authentication Request From Vehicle: {data}")
             handle_vehicle_authentication(vehicle_socket, data)
+        if data['req_type'] == "data_transfer":
+            print(f"[RSU] Received Data Transfer Request From Vehicle: {data}")
+            handle_data_transfer(vehicle_socket, data)
+
 
 
 if __name__ == "__main__":

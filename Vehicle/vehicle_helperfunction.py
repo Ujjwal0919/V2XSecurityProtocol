@@ -72,14 +72,12 @@ def extract_v_data_transfer():
     file_path = 'v_data_transfer.txt'
     data = {
         "SID": None,
-        "PSID": None,
         "AuthToken": None,
         "AuthTokenSig": None
     }
     with open(file_path, 'r') as file:
         content = file.read()
     data["SID"] = re.search(r"SID:\s([a-f0-9]+)", content).group(1)
-    data["PSID"] = re.search(r"PSID:\s([a-f0-9]+)", content).group(1)
     data["AuthToken"] = re.search(r"AuthToken:\s([a-f0-9:TZ-]+)", content).group(1)
     data["AuthTokenSig"] = re.search(r"AuthTokenSig:\s([a-f0-9]+)", content).group(1)
     return data

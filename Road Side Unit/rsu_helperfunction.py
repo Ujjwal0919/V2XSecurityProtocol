@@ -27,6 +27,19 @@ def fetch_vehicle_cache(SID):
         return result[0]
     else:
         return None
+
+def rsu_pub_key(SID):
+    conn = sqlite3.connect("./Database/rsu_db.db")
+    cursor = conn.cursor()
+    query = "SELECT PubKey from rsu_info WHERE SID=?"
+    cursor.execute(query, (SID,))
+    result = cursor.fetchone()
+    conn.close()
+    if result is not None:
+        return result[0]
+    else:
+        return None
+
 def save_rsu_data_transfer(sid, authtoken, authtokenSig):
     with open('rsu_data_transfer.txt', 'w') as file:
         file.write(f"SID: {sid}\n")

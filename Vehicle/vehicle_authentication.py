@@ -3,9 +3,7 @@ import hashlib
 import os
 import socket, json
 from datetime import datetime, timezone
-
 from colorama import Fore, Style
-
 from vehicle_helperfunction import *
 
 
@@ -30,7 +28,10 @@ def perform_authentication(rsu_socket, rsu_info):
     }
     print(f"[Vehicle] Sending Message to RSU: {data_packet}")
     rsu_socket.sendall(json.dumps(data_packet).encode())
-    rsu_response = json.loads(rsu_socket.recv(4096).decode())
+    try:
+        rsu_response = json.loads(rsu_socket.recv(4096).decode())
+    except:
+        print(Fore.RED + f"[Vehicle]")
     print(f"[Vehicle] Received Authentication Response from RSU: {rsu_response}")
     M = json.loads(decrypt_message(rsu_response, sharedkey).decode())
     if 'rsu_res' in M:
