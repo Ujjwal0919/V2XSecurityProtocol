@@ -14,7 +14,17 @@ def connect_to_ta():
     print("[RSU] Connected To Trusted Authority")
     return ta_socket
 
-def handle_vehicle_offline_authentication(vehicle_socket, M1, shared_key_v, vehicle_chall, data, rsu_credentials):
+def handle_vehicle_offline_authentication(vehicle_socket, data):
+    vehicle_chall = fetch_vehicle_cache(data['V_SID'])
+    rsu_credentials = extract_keys_from_file()
+    shared_key_v = generate_shareKey(rsu_credentials['RSU PrivKey'], data['V_PubKey'])
+    M1 = json.loads(decrypt_message(data, shared_key_v).decode())
+    I1 = hashlib.sha256((data['V_SID'] + M1['n1'] + M1['v_res'] + data['T1']).encode()).hexdigest()
+    shared_key_ta = generate_shareKey(rsu_credentials['RSU PrivKey'], rsu_credentials['TA PubKey'])
+    if I1 != data['I1']:
+        print(Fore.RED + f"[RSU] Integrity Check Failed !!" + Style.RESET_ALL)
+        exit()
+    print(Fore.GREEN + f"[RSU] Integrity Check Successful !!" + Style.RESET_ALL)
     vehicle_res = hashlib.sha256((M1['n1'] + vehicle_chall).encode()).hexdigest()
     if vehicle_res != M1['v_res']:
         print(Fore.RED + f"[RSU] Vehicle Authentication Failed" + Style.RESET_ALL)
@@ -63,14 +73,6 @@ def handle_vehicle_authentication(vehicle_socket, data):
         print(Fore.RED + f"[RSU] Integrity Check Failed !!" + Style.RESET_ALL)
         exit()
     print(Fore.GREEN + f"[RSU] Integrity Check Successful !!" + Style.RESET_ALL)
-    vehicle_chall = fetch_vehicle_cache(data['V_SID'])
-    if vehicle_chall:
-        # OFFLINE AUTHENTICATION PHASE
-        print(Fore.GREEN + f"[RSU] Cache Hit: Vehicle found in cache" + Style.RESET_ALL)
-        handle_vehicle_offline_authentication(vehicle_socket, M1, shared_key_v, vehicle_chall, data, rsu_credentials)
-        return
-    # ONLINE AUTHENTICATION PHASE
-    print(Fore.RED + f"[RSU] Cache Miss: Vehicle Details Not Found in Cache" + Style.RESET_ALL)
     n2, rsu_res = generate_nonce_and_response(rsu_credentials['Challenge'])
     t2 = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
     if os.path.isfile('rsu_data_transfer.txt'):
@@ -162,27 +164,3 @@ def handle_vehicle_authentication(vehicle_socket, data):
     save_vehicle_creds(vehicle_cred['V_SID'], vehicle_cred['V_Chall'])
     vehicle_socket.sendall(json.dumps(data_packet).encode())
     print(Fore.GREEN + f"*********** Authentication Complete ***********")
-
-
-def start_rsu_server():
-    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_socket.bind(('0.0.0.0', 8590))
-    server_socket.listen()
-    print("****************** RSU Server Started ****************")
-    while True:
-        vehicle_socket, client_address = server_socket.accept()
-        data = json.loads(vehicle_socket.recv(1024).decode())
-        if data['req_type'] == "auth_Request":
-            print(f"[RSU] Received Authentication Request From Vehicle: {data}")
-            handle_vehicle_authentication(vehicle_socket, data)
-        if data['req_type'] == "data_transfer":
-            print(f"[RSU] Received Data Transfer Request From Vehicle: {data}")
-            handle_data_transfer(vehicle_socket, data)
-
-
-
-if __name__ == "__main__":
-    try:
-        start_rsu_server()
-    except KeyboardInterrupt:
-        print("[RSU] Road Side Unit Server Stopped By User")

@@ -1,6 +1,8 @@
 import socket, json, time
 from rsu_helperfunction import extract_keys_from_file, extract_rsu_data_transfer
 
+
+RSU_SERVER_ADD = "localhost"
 def create_broadcast_socket():
     broadcast_address = '<broadcast>'
     port = 4545

@@ -1,12 +1,12 @@
 import hashlib
 import socket, json
 from datetime import datetime, timezone
-
 from vehicle_helperfunction import *
 from colorama import Fore, Style
 
-def data_transfer(vehicle_socket, rsu_info, message):
 
+
+def data_transfer(vehicle_socket, rsu_info, message):
     vehicle_credentials = extract_keys_from_file()
     vehicle_auth_token = extract_v_data_transfer()
     shared_key = generate_shareKey(vehicle_credentials['V PrivKey'], rsu_info['PubKey'])
@@ -48,39 +48,3 @@ def data_transfer(vehicle_socket, rsu_info, message):
     print(Fore.GREEN + f"[Vehicle] RSU Authentication Token Signature Verification Successful" + Style.RESET_ALL)
     if M2['Status'] == 200:
         print(Fore.GREEN + f" MESSAGE TRANSFER SUCCESSFUL" + Style.RESET_ALL)
-
-
-
-
-
-
-
-def connect_to_RSU():
-    server_address = ('localhost', 8590)
-    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client_socket.connect(server_address)
-    return client_socket
-
-def receive_broadcast():
-    port = 4545
-    buffer_size = 1024
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    sock.bind(('', port))
-    print(f"[Vehicle] Searching For Nearby Road Side Unit ...")
-    try:
-        data, address = sock.recvfrom(buffer_size)
-    except KeyboardInterrupt:
-        print(f"[Vehicle] Vehicle Data Transfer Stopped...")
-    finally:
-        sock.close()
-    return data
-
-
-if __name__ == "__main__":
-    rsu_info = json.loads(receive_broadcast().decode())
-    print(f"[Vehicle] Received RSU Information from Broadcast:{rsu_info}")
-    rsu_socket = connect_to_RSU()
-    print(f"[Vehicle] Connected To Road Side Unit:{rsu_info['SID']}")
-    message = input("Enter the Message: ")
-    data_transfer(rsu_socket, rsu_info, message)

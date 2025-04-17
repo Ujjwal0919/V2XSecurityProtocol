@@ -1,6 +1,3 @@
-import binascii
-import hashlib
-import os
 import socket, json
 from datetime import datetime, timezone
 from colorama import Fore, Style
@@ -66,32 +63,3 @@ def perform_authentication(rsu_socket, rsu_info):
         print(Fore.GREEN + f"************* AUTHENTICATION COMPLETE *********" + Style.RESET_ALL)
     end_time = time.time()
     print(f"Time Taken For Authentication: {end_time - start_time} seconds")
-
-def connect_to_RSU():
-    server_address = ('localhost', 8593)
-    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client_socket.connect(server_address)
-    return client_socket
-
-def receive_broadcast():
-    port = 4545
-    buffer_size = 1024
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    sock.bind(('', port))
-    print(f"[Vehicle] Searching For Nearby Road Side Unit ...")
-    try:
-        data, address = sock.recvfrom(buffer_size)
-    except KeyboardInterrupt:
-        print(f"[Vehicle] Vehicle Data Transfer Stopped...")
-    finally:
-        sock.close()
-    return data
-
-
-if __name__ == "__main__":
-    rsu_info = json.loads(receive_broadcast().decode())
-    print(f"[Vehicle] Received RSU Information from Broadcast:{rsu_info}")
-    rsu_socket = connect_to_RSU()
-    print(f"[Vehicle] Connected To Road Side Unit:{rsu_info['SID']}")
-    perform_authentication(rsu_socket, rsu_info)
