@@ -2,10 +2,10 @@ import socket
 from vehicle_authentication import *
 from vehicle_data_transfer import *
 
-RSU_SERVER_PORT = 8591
+RSU_SERVER_PORT = 8594
 RSU_SERVER_BROAD_PORT = 4545
 def connect_to_RSU():
-    server_address = ('localhost', 8591)
+    server_address = ('localhost', RSU_SERVER_PORT)
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client_socket.connect(server_address)
     return client_socket

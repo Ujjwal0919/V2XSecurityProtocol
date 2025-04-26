@@ -1,7 +1,8 @@
 import socket, json
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from colorama import Fore, Style
 from vehicle_helperfunction import *
+threshold = timedelta(hours=0, minutes=0, seconds=4, microseconds=110268)
 
 
 def perform_authentication(rsu_socket, rsu_info):
@@ -25,15 +26,31 @@ def perform_authentication(rsu_socket, rsu_info):
     }
     print(f"[Vehicle] Sending Message to RSU: {data_packet}")
     rsu_socket.sendall(json.dumps(data_packet).encode())
+
     try:
         rsu_response = json.loads(rsu_socket.recv(4096).decode())
+        T_r = datetime.now(timezone.utc)
     except:
-        print(Fore.RED + f"[Vehicle]")
+        print(Fore.RED + f"[Vehicle] Authentication Failed !!" + Style.RESET_ALL)
     print(f"[Vehicle] Received Authentication Response from RSU: {rsu_response}")
     M = json.loads(decrypt_message(rsu_response, sharedkey).decode())
     if 'rsu_res' in M:
         # OFFLINE AUTHENTICATION
         print(f"[Vehicle] Performing Offline Authentication")
+        I2 = hashlib.sha256(
+            (rsu_response['V_SID'] + n1 + v_res + M['n2'] + M['rsu_res'] + M['T2']).encode()).hexdigest()
+        if I2 != rsu_response['I2']:
+            print(Fore.RED + f"[Vehicle] Error: Integrity Check Failed" + Style.RESET_ALL)
+            rsu_socket.close()
+            return
+        print(Fore.GREEN + f"[Vehicle] Integrity Check Successful" + Style.RESET_ALL)
+        T2 = datetime.strptime(M['T2'], '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=timezone.utc)
+        if (T_r - T2) > threshold:
+            print(T_r - T2)
+            print(Fore.RED + f"Error: Time difference exceeds threshold" + Style.RESET_ALL)
+            rsu_socket.close()
+            return
+        print(Fore.GREEN + f"Time difference is within acceptable limits" + Style.RESET_ALL)
         rsu_res = hashlib.sha256((M['n2'] + v_credentials['Challenge']).encode()).hexdigest()
         if rsu_res!= M['rsu_res']:
             print(Fore.RED + f"[Vehicle] RSU Authentication Failed" + Style.RESET_ALL)
@@ -50,6 +67,12 @@ def perform_authentication(rsu_socket, rsu_info):
             print(Fore.RED + f"[Vehicle] Integrity Check Failed" + Style.RESET_ALL)
             rsu_socket.close()
             exit()
+        T4 = datetime.strptime(rsu_response['T4'], '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=timezone.utc)
+        if (T_r - T4) > threshold:
+            print(Fore.GREEN + f"Error: Time difference exceeds threshold" + Style.RESET_ALL)
+            rsu_socket.close()
+            return
+        print(Fore.RED + f"Time difference is within acceptable limits" + Style.RESET_ALL)
         print(Fore.GREEN + f"[Vehicle] Integrity Check Successful" + Style.RESET_ALL)
         v_ta_res = hashlib.sha256((M4['N4'] + v_credentials['Challenge']).encode()).hexdigest()
         if v_ta_res!= M4['v_ta_res']:
