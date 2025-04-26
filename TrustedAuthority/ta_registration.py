@@ -77,7 +77,7 @@ def start_registration_server(host='0.0.0.0', port=4444):
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.bind((host, port))
     server_socket.listen()
-    print(f"****************** Registration Server Started ****************")
+    print(f"****************** Trusted Authority Registration Server Started ****************")
 
     while True:
         client_socket, client_address = server_socket.accept()

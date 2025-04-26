@@ -6,9 +6,9 @@ from datetime import datetime, timezone, timedelta
 from colorama import Fore, Style
 from ta_helperfuntion import *
 
+threshold = timedelta(hours=0, minutes=0, seconds=4, microseconds=110268)
 
-
-def handle_rsu_authentication(rsu_socket, data):
+def handle_rsu_authentication(rsu_socket, data, T_r):
     rsu_authenticated = False
     rsu_credentials = extract_rsu_credentials(data['RSU_SID'])
     ta_credentials = extract_ta_credentials()
@@ -25,6 +25,13 @@ def handle_rsu_authentication(rsu_socket, data):
             rsu_socket.close()
             return
         print(Fore.GREEN + f"[TA] Integrity Check Successful" + Style.RESET_ALL)
+        T2 = datetime.strptime(data['T2'], '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=timezone.utc)
+        if (T_r - T2) > threshold:
+            print(T_r - T2)
+            print(Fore.RED + f"Error: Time difference exceeds threshold" + Style.RESET_ALL)
+            rsu_socket.close()
+            return
+        print(Fore.GREEN + f"Time difference is within acceptable limits" + Style.RESET_ALL)
         print(f"[TA] Road Side Unit Already Authenticated")
         print(f"[TA] Verifying Authentication Token")
         if verify_signature(M2['rsu_authToken'], M2['rsu_authToken_Sig'], ta_credentials['TA_Pub_Key']):
@@ -94,21 +101,3 @@ def handle_rsu_authentication(rsu_socket, data):
     print(f"[TA] Sending Authentication Response To Trusted Authority: {data_packet}")
     rsu_socket.sendall(json.dumps(data_packet).encode())
     print(f"*********************** AUTHENTICATION SUCCESSFUL ****************")
-def start_authentication_server():
-    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_socket.bind(('0.0.0.0', 5522))
-    server_socket.listen()
-    print("****************** Authentication Server Started ****************")
-    while True:
-        rsu_socket, rsu_address = server_socket.accept()
-        data = json.loads(rsu_socket.recv(4096).decode())
-        if data['req_type'] == 'auth_request':
-            print(f"[TA] Received Authentication Request From RSU {data}")
-            handle_rsu_authentication(rsu_socket, data)
-
-
-if __name__ == "__main__":
-    try:
-        start_authentication_server()
-    except KeyboardInterrupt:
-        print("[TA] Authentication Server Stopped By User")
