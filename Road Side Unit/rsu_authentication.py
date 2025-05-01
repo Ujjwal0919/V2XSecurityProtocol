@@ -21,7 +21,6 @@ def handle_vehicle_offline_authentication(vehicle_socket, data, T_r):
     shared_key_v = generate_shareKey(rsu_credentials['RSU PrivKey'], data['V_PubKey'])
     M1 = json.loads(decrypt_message(data, shared_key_v).decode())
     I1 = hashlib.sha256((data['V_SID'] + M1['n1'] + M1['v_res'] + data['T1']).encode()).hexdigest()
-    shared_key_ta = generate_shareKey(rsu_credentials['RSU PrivKey'], rsu_credentials['TA PubKey'])
     if I1 != data['I1']:
         print(Fore.RED + f"[RSU] Integrity Check Failed !!" + Style.RESET_ALL)
         exit()
@@ -29,10 +28,10 @@ def handle_vehicle_offline_authentication(vehicle_socket, data, T_r):
     T1 = datetime.strptime(data['T1'], '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=timezone.utc)
     if (T_r - T1) > threshold:
         print(T_r - T1)
-        print(f"Error: Time difference exceeds threshold")
+        print(Fore.RED + f"Error: Time difference exceeds threshold" + Style.RESET_ALL)
         vehicle_socket.close()
         return
-    print(f"Time difference is within acceptable limits")
+    print(Fore.GREEN + f"Time difference is within acceptable limits" + Style.RESET_ALL)
     vehicle_res = hashlib.sha256((M1['n1'] + vehicle_chall).encode()).hexdigest()
     if vehicle_res != M1['v_res']:
         print(Fore.RED + f"[RSU] Vehicle Authentication Failed" + Style.RESET_ALL)
@@ -41,6 +40,8 @@ def handle_vehicle_offline_authentication(vehicle_socket, data, T_r):
     print(Fore.GREEN + f"[RSU] Vehicle Verified In Offline Mode" + Style.RESET_ALL)
     N2 = os.urandom(8).hex()
     rsu_res = hashlib.sha256((N2 + vehicle_chall).encode()).hexdigest()
+
+    #Generating Session Tokens & Signature for Vehicle
     SessionToken = hashlib.sha256((data['V_SID'] + M1['n1'] + N2).encode()).hexdigest()
     expiration_time = (datetime.now(timezone.utc) + timedelta(weeks=4)).strftime('%Y-%m-%dT%H:%M:%SZ')
     v_SessionToken = f"{rsu_credentials['SID']}:{SessionToken}:{expiration_time}"
@@ -56,6 +57,7 @@ def handle_vehicle_offline_authentication(vehicle_socket, data, T_r):
         'v_sessionTokenSig': v_SessionTokenSig,
         'T2': t2
     }), shared_key_v)
+
     I2 = hashlib.sha256((data['V_SID'] + M1['n1'] + M1['v_res'] + N2 + rsu_res + t2).encode()).hexdigest()
     data_packet = {
         'V_SID': data['V_SID'],
@@ -88,10 +90,10 @@ def handle_vehicle_authentication(vehicle_socket, data, T_r):
         vehicle_socket.close()
         return
     print(Fore.GREEN + f"[RSU]Time difference is within acceptable limits" + Style.RESET_ALL)
-    n2, rsu_res = generate_nonce_and_response(rsu_credentials['Challenge'])
     t2 = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
     if os.path.isfile('rsu_data_transfer.txt'):
         print(f"[RSU] Already Authenticated with Trusted Authority")
+        rsu_authenticated = True
         rsu_authTokens = extract_rsu_data_transfer()
         M2 = encrypt_message(json.dumps({
             'V_SID': data['V_SID'],
@@ -101,9 +103,10 @@ def handle_vehicle_authentication(vehicle_socket, data, T_r):
             'rsu_authToken_Sig': rsu_authTokens['AuthTokenSig']
             }), shared_key_ta)
         I2 = hashlib.sha256((data['V_SID'] + M1['n1'] + M1['v_res'] + rsu_authTokens['AuthToken'] + rsu_authTokens['AuthTokenSig'] + t2).encode()).hexdigest()
-        rsu_authenticated = True
+
     else:
         print("[RSU] RSU is Not Authenticated with Trusted Authority")
+        n2, rsu_res = generate_nonce_and_response(rsu_credentials['Challenge'])
         M2 = encrypt_message(json.dumps({
                 'V_SID': data['V_SID'],
                 'N1': M1['n1'],
@@ -143,10 +146,11 @@ def handle_vehicle_authentication(vehicle_socket, data, T_r):
     T3 = datetime.strptime(ta_response['T3'], '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=timezone.utc)
     if (T_r - T3) > threshold:
         print(T_r - T3)
-        print(f"Error: Time difference exceeds threshold")
+        print(Fore.RED + f"Error: Time difference exceeds threshold" + Style.RESET_ALL)
         vehicle_socket.close()
         return
-    print(f"Time difference is within acceptable limits")
+    print(Fore.GREEN + f"Time difference is within acceptable limits" + Style.RESET_ALL)
+
     if rsu_authenticated == False:
         rsu_ta_res = hashlib.sha256((M3['N4'] + rsu_credentials['Challenge']).encode()).hexdigest()
         if rsu_ta_res != M3['rsu_ta_res']:
@@ -155,7 +159,10 @@ def handle_vehicle_authentication(vehicle_socket, data, T_r):
         print(Fore.GREEN + f"[RSU] TA Authentication Successful")
         print(f"[RSU] Saving RSU's Authentication Token and Signature")
         save_rsu_data_transfer(rsu_credentials['SID'], M3['SessionKeyRSU'], M3['SessionKeySig'])
-
+    if 'v_cred'  not in M3:
+        print(Fore.RED + f"[RSU] Vehicle Authentication Failed !!" + Style.RESET_ALL)
+        vehicle_socket.close()
+        return
     print(Fore.GREEN + f"[RSU] Vehicle Authentication Successful" + Style.RESET_ALL)
     N5 = os.urandom(8).hex()
     SessionToken = hashlib.sha256((data['V_SID'] + M1['n1'] + N5 ).encode()).hexdigest()
@@ -186,5 +193,7 @@ def handle_vehicle_authentication(vehicle_socket, data, T_r):
     print(f"[RSU] Saving Vehicle Credentials in Cache Database")
     vehicle_cred = json.loads(M3['v_cred'])
     save_vehicle_creds(vehicle_cred['V_SID'], vehicle_cred['V_Chall'])
+    #CHANGE THIS TO USE LORA
     vehicle_socket.sendall(json.dumps(data_packet).encode())
+
     print(Fore.GREEN + f"*********** Authentication Complete ***********")

@@ -30,9 +30,9 @@ def data_transfer(vehicle_socket, rsu_info, message):
         'T1': t1
     }
     print(f"[Vehicle] Sending Message To RSU: {data_packet}")
-    vehicle_socket.sendall(json.dumps(data_packet).encode())
+    vehicle_socket.sendall(json.dumps(data_packet).encode()) # Uncomment line to use Wifi
     try:
-        ack = json.loads(vehicle_socket.recv(4096).decode())
+        ack = json.loads(vehicle_socket.recv(4096).decode()) # Uncomment line to use Wifi
     except:
         print(f"[Vehicle] Message Transfer Failed !!!!!!")
         exit()

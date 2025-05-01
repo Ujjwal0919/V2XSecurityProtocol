@@ -13,6 +13,8 @@ curve = registry.get_curve('brainpoolP256r1') # 256-bit
 
 
 ta_public_key, ta_private_key = "H" , "H"
+TA_REG_SERVER_ADD = '0.0.0.0'
+TA_REG_SERVER_PORT = 4444
 
 def save_rsu_data(SID, Chall, PubKey):
     conn =sqlite3.connect("./DataBases/TAdb.db")
@@ -73,9 +75,9 @@ def handle_v_registration(client_socket, data):
     print("********************** Registration Complete *********************")
     client_socket.close()
 
-def start_registration_server(host='0.0.0.0', port=4444):
+def start_registration_server():
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_socket.bind((host, port))
+    server_socket.bind((TA_REG_SERVER_ADD, TA_REG_SERVER_PORT))
     server_socket.listen()
     print(f"****************** Trusted Authority Registration Server Started ****************")
 

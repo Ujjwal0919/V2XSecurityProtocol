@@ -12,25 +12,10 @@ from Crypto.Cipher import AES
 
 
 #curve = registry.get_curve('BRAINPOOLP160r1') # 160 Bit
-#curve = registry.get_curve('BRAINPOOLP192r1')  # 192-bit (current)
+#curve = registry.get_curve('BRAINPOOLP192r1')  # 192-bit
 curve = registry.get_curve('brainpoolP256r1') # 256-bit
 #curve = registry.get_curve('BRAINPOOLP320r1')  # 320-bit
 #curve = registry.get_curve('BRAINPOOLP512r1')  # 512-bit
-
-
-def generate_error_data_packet(sid, error_msg, shared_key):
-    T = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M")
-    error = json.dumps({"error": error_msg, "T": T})
-    I_ER = hashlib.sha256((sid + error + T).encode()).hexdigest()
-    error_msg_enc = encrypt_message(error, shared_key)
-    data_packet = {
-        'SID': sid,
-        'ciphertext': binascii.hexlify(error_msg_enc[0]).decode('utf-8'),
-        'nonce': binascii.hexlify(error_msg_enc[1]).decode('utf-8'),
-        'authTag': binascii.hexlify(error_msg_enc[2]).decode('utf-8'),
-        'I_ER': I_ER
-    }
-    return data_packet
 
 def generate_shareKey(TA_PrivKey, Node_PubKey):
     TA_PrivKey_INT = int(TA_PrivKey)
@@ -38,15 +23,6 @@ def generate_shareKey(TA_PrivKey, Node_PubKey):
     Shared_Key = TA_PrivKey_INT * RSU_PubKey_Point
     Shared_Key_256 = ecc_point_to_256_bit_key(Shared_Key)
     return binascii.hexlify(Shared_Key_256).decode()
-
-def save_v_data_transfer(sid, psid, authtoken, authtokenSig):
-    conn = sqlite3.connect("./DataBases/TAdb.db")
-    cursor = conn.cursor()
-    query = "INSERT INTO V_Data_Transfer (SID, PSID, AuthToken, AuthTokenSig) VALUES (?,?,?,?)"
-    cursor.execute(query, (sid, psid, authtoken, authtokenSig))
-    conn.commit()
-    conn.close()
-    print("Vehicle Data Transfer Details Stored in Database")
 
 def save_rsu_data_transfer(sid, psid, authtoken, authtokenSig):
     conn = sqlite3.connect("./DataBases/TAdb.db")
@@ -56,6 +32,7 @@ def save_rsu_data_transfer(sid, psid, authtoken, authtokenSig):
     conn.commit()
     conn.close()
     print("RSU Data Transfer Details Stored in Database")
+
 def extract_ta_credentials():
     ta_credentials = {
         "TA_Pub_Key": None,
@@ -175,16 +152,3 @@ def verify_signature(msg, signature, compressed_pub_key):
     u2 = (r * w) % curve.field.n
     v = (u1 * curve.g + u2 * pub_key_point).x % curve.field.n
     return v == r
-
-def get_packet_size(data_packet):
-    total_size = 0
-    for key, value in data_packet.items():
-        total_size += sys.getsizeof(key)
-        if key in ['ciphertext', 'nonce', 'authTag']:
-            total_size += len(binascii.unhexlify(value))
-        elif isinstance(value, str):
-            total_size += len(value.encode('utf-8'))
-        else:
-            total_size += sys.getsizeof(value)
-    total_size += sys.getsizeof(data_packet)
-    return total_size
