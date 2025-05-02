@@ -7,9 +7,11 @@ from rsu_data_transfer import *
 from colorama import Fore, Style
 
 threshold = timedelta(hours=0, minutes=0, seconds=4, microseconds=110268)
+TA_ADDRESS = '192.168.0.188'
+TA_PORT = 5522
 
 def connect_to_ta():
-    server_address = ('localhost', 5522)
+    server_address = (TA_ADDRESS, TA_PORT)
     ta_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     ta_socket.connect(server_address)
     print("[RSU] Connected To Trusted Authority")
