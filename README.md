@@ -32,3 +32,40 @@ The V2X Secure Authentication Protocol is designed around a three-tier architect
       * Authenticate RSU.
       * Maintains a secure database of registered entities.
    * Implementation: Contained within the /TrustedAuthority/ directory, including scripts for entity registration, credential issuance, and authentication validation.
+
+
+## 🗂️ Project Structure & Simulation Logic
+This project simulates a secure V2X environment using three main components—Vehicle, Road Side Unit (RSU), and Trusted Authority (TA)—each implemented as a separate module. Every component follows a consistent structure for handling registration, authentication, and V2I data transfer.
+
+```aiignore
+
+── README.md
+├── Road Side Unit
+│ ├── Database
+│ │ ├── rsu_db.db
+│ ├── rsu_authentication.py
+│ ├── rsu_broadcast.py
+│ ├── main.py
+│ ├── rsu_data_transfer.py
+│ ├── rsu_data_transfer.txt
+│ ├── rsu_helperfunction.py
+│ ├── rsu_keys.txt
+│ └── rsu_registration.py
+├── TrustedAuthority
+│ ├── DataBases
+│ │ └── TAdb.db
+│ ├── __init__.py
+│ ├── main.py
+│ ├── ta_authentication.py
+│ ├── ta_helperfuntion.py
+│ └── ta_registration.py
+└── Vehicle
+│ ├── main.py
+│ ├── vehicle_authentication.py
+│ ├── vehicle_data_transfer.py
+│ └── vehicle_helperfunction.py
+│ └── vehicle_registration.py
+
+```
+
+### 🛢️ Database Setup
