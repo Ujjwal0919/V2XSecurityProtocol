@@ -69,3 +69,50 @@ This project simulates a secure V2X environment using three main components—Ve
 ```
 
 ### 🛢️ Database Setup
+The Trusted Authority (TA) and Road Side Unit (RSU) components rely on local SQLite databases to manage cryptographic credentials and session information. These databases must be set up manually before running the simulation.
+
+### 🔧 Database Files
+
+    Trusted Authority Database: Tdb.db
+
+    RSU Database: rsu_db.db
+
+### Step-by-Step Table Creation
+Follow these steps to manually create the tables using SQLite:
+
+1. **Trusted Authority (TAdb.db)**
+   * Open a terminal go to database directory and launch sqlite3 shell.
+   ```bash
+    cd /V2XSecurityProtocol/TrustedAuthority/DataBases
+    sqlite3 TAdb.db
+    ```
+   * Create tables in trusted authority database.
+   ```bash
+    CREATE TABLE rsu_data (
+    SID TEXT PRIMARY KEY,
+    Chall TEXT,
+    PubKey TEXT
+    );
+   ```
+   ```bash
+   CREATE TABLE vehicle_data (
+    SID TEXT PRIMARY KEY,
+    Chall TEXT,
+    PubKey TEXT
+    );
+   ```
+  
+  ```bash
+    CREATE TABLE TAKeys (
+    PubKey TEXT,
+    PrivKey TEXT
+    );
+   ```
+
+2. **Road Side Unit (rsu_db.db)**
+    * Open a terminal go to RSU's database directory and launch sqlite3 shell.
+    ```bash
+    cd /V2XSecureProtocol/RoadSideUnit/Database
+    sqlite3 rsu_db.db
+   ```
+   * 
