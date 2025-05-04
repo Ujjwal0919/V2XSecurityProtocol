@@ -40,6 +40,7 @@ This project simulates a secure V2X environment using three main components—Ve
 ```aiignore
 
 ── README.md
+── requirements.txt
 ├── Road Side Unit
 │ ├── Database
 │ │ ├── rsu_db.db
@@ -190,3 +191,36 @@ During vehicle's authentication, RSU also checks if it is authenticated with TA 
    ```
 
 ### 3️⃣ V2I Data Transfer Phase (Vehicle to Infrastructure)
+After successful authentication, the Vehicle securely transmits encrypted messages to the RSU and vice versa.
+
+1. Start the Road Side Unit server from ```bash /Road Side Unit``` directory.
+   ```bash
+   python3 main.py
+   ```
+2. Start the data transfer from a vehicle machine and select the data transfer from menu.
+   ```bash
+   python3 main.py
+   [Vehicle] Searching For Nearby Road Side Unit ...
+   [Vehicle] Received RSU Information from Broadcast:{'SID': '3e4a34803a60d2a0', 'PubKey': '0x8c7b4558ea5b90d7c11e21256f3ef9c2a715df85f5b46a69eb7d89ef3e805fe50'}
+   [Vehicle] Connected To Road Side Unit:3e4a34803a60d2a0
+   ************** VEHICLE MENU ***************
+   1. Perform Authentication
+   2. Perform Data Transfer (V2I)
+   Enter Your Choice (1-2)2
+   Enter the message: This is a first message
+   [Vehicle] Generating Message  ........
+   ```
+
+## ✅ Conclusion
+
+This project presents a prototype implementation of a lightweight and secure authentication mechanism tailored for V2X (Vehicle-to-Everything) communications. By simulating the interactions between Vehicles, Road Side Units (RSUs), and a Trusted Authority (TA), the project demonstrates core security operations such as registration, mutual authentication using Zero-Knowledge Proofs, and secure V2I data transfer.
+
+While the foundational components have been implemented and tested in a controlled Raspberry Pi environment, the project is still under active development. Future enhancements will focus on:
+
+    * Improving cryptographic performance and scalability
+
+    * Adding secure V2V (Vehicle-to-Vehicle) communication
+
+    * Implementing control to secure the privacy of entities.
+
+We welcome collaboration and feedback as we continue to refine and expand the system for real-world deployment scenarios.
