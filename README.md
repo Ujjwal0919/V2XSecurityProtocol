@@ -115,4 +115,48 @@ Follow these steps to manually create the tables using SQLite:
     cd /V2XSecureProtocol/RoadSideUnit/Database
     sqlite3 rsu_db.db
    ```
-   * 
+    * Create tables in road side unit database.
+   ```bash
+    CREATE TABLE rsu_data (
+    SID TEXT PRIMARY KEY,
+    PubKey TEXT
+    );
+    ```
+   ```bash
+    CREATE TABLE vehicle_cache (
+    SID TEXT PRIMARY KEY,
+    Chall TEXT
+    );
+    ```
+   
+## 🚀 Running the Setup
+Each component in the V2X Secure Authentication Protocol—Vehicle, Road Side Unit (RSU), and Trusted Authority (TA)—is designed to run independently, making the system suitable for distributed and real-world testing.
+
+### 🖥️ Deployment Setup
+For our demonstration:
+1. Vehicle: Raspberry Pi 8GB RAM
+2. Road Side Unit (RSU): Raspberry Pi 8GB RAM
+3. Trusted Authority (TA): PC with Intel i7 processor and 16GB RAM
+4. Communication Interface: All entities are connected via the same Wi-Fi network for seamless communication.
+
+### 🧪 Simulation Phases
+The simulation is organized into three main phases:
+#### 1️⃣ Registration Phase
+The goal of this phase is to register each entity with the Trusted Authority and exchange public key credentials.
+**Steps:**
+1. Start the Trusted Authority service in trusted authority machine to listen for registration requests from vehicles and road side unit.
+    ``` bash
+   python3 ta_registration.py
+   ```
+2. Register road side unit in RSU machine.
+    ```bash
+   python3 rsu_registration.py
+   ```
+3. Register the vehicle in vehicle's machine.
+   ```bash
+    python3 vehicle_registration.py
+    ```
+Each entity will generate public/private key pairs, save them in their memory (as a .txt file for demo) and send their public keys to TA. On the other hand TA, generate a unique SID and a Zero Knowledge Proof challenge for each entity. TA will generate a unique serial identity (SID) and a Zero Knowledge Proof challenge and them back to each entitiy along with TA's public key. Entities will save these identity information in their local storage.
+
+### 2️⃣ Authentication Phase
+In this phase, the Vehicle and RSU mutually authenticate each other using Zero-Knowledge Proof (ZKP), with the TA involved in credential validation.
