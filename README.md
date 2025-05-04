@@ -69,7 +69,7 @@ This project simulates a secure V2X environment using three main components—Ve
 
 ```
 
-### 🛢️ Database Setup
+### 🛢️ Database Setup & Install Dependencies
 The Trusted Authority (TA) and Road Side Unit (RSU) components rely on local SQLite databases to manage cryptographic credentials and session information. These databases must be set up manually before running the simulation.
 
 ### 🔧 Database Files
@@ -129,7 +129,12 @@ Follow these steps to manually create the tables using SQLite:
     Chall TEXT
     );
     ```
-   
+
+### Installing Dependencies
+```bash
+pip3 install -r requirements.txt
+```
+
 ## 🚀 Running the Setup
 Each component in the V2X Secure Authentication Protocol—Vehicle, Road Side Unit (RSU), and Trusted Authority (TA)—is designed to run independently, making the system suitable for distributed and real-world testing.
 
