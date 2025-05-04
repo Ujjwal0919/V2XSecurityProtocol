@@ -216,11 +216,8 @@ After successful authentication, the Vehicle securely transmits encrypted messag
 This project presents a prototype implementation of a lightweight and secure authentication mechanism tailored for V2X (Vehicle-to-Everything) communications. By simulating the interactions between Vehicles, Road Side Units (RSUs), and a Trusted Authority (TA), the project demonstrates core security operations such as registration, mutual authentication using Zero-Knowledge Proofs, and secure V2I data transfer.
 
 While the foundational components have been implemented and tested in a controlled Raspberry Pi environment, the project is still under active development. Future enhancements will focus on:
-
-    * Improving cryptographic performance and scalability
-
-    * Adding secure V2V (Vehicle-to-Vehicle) communication
-
-    * Implementing control to secure the privacy of entities.
+1. Improving cryptographic performance and scalability
+2. Adding secure V2V (Vehicle-to-Vehicle) communication
+3. Implementing control to secure the privacy of entities.
 
 We welcome collaboration and feedback as we continue to refine and expand the system for real-world deployment scenarios.
