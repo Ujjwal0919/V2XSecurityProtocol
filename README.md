@@ -148,7 +148,7 @@ The goal of this phase is to register each entity with the Trusted Authority and
     ``` bash
    python3 ta_registration.py
    ```
-2. Register road side unit in RSU machine.
+2. Register roadside unit in RSU machine.
     ```bash
    python3 rsu_registration.py
    ```
@@ -156,7 +156,37 @@ The goal of this phase is to register each entity with the Trusted Authority and
    ```bash
     python3 vehicle_registration.py
     ```
-Each entity will generate public/private key pairs, save them in their memory (as a .txt file for demo) and send their public keys to TA. On the other hand TA, generate a unique SID and a Zero Knowledge Proof challenge for each entity. TA will generate a unique serial identity (SID) and a Zero Knowledge Proof challenge and them back to each entitiy along with TA's public key. Entities will save these identity information in their local storage.
+Each entity will generate public/private key pairs, save them in their memory (as a .txt file for demo) and send their public keys to TA. On the other hand TA, generate a unique SID and a Zero Knowledge Proof challenge for each entity. TA will generate a unique serial identity (SID) and a Zero Knowledge Proof challenge and them back to each entitiy along with TA's public key. Entities will save this identity information in their local storage.
 
 ### 2️⃣ Authentication Phase
-In this phase, the Vehicle and RSU mutually authenticate each other using Zero-Knowledge Proof (ZKP), with the TA involved in credential validation.
+In this phase, the Vehicle and RSU mutually authenticate each other using Zero-Knowledge Proof (ZKP), with the TA involved in credential validation. The authentication phase is divided into two different scenarios i.e 
+1. Online Authentication
+   In Online authentication a vehicle performs authentication through a RSU for the first time. At this time RSU doesn't have vehicle's credentials, hence RSU completes vehicle's authentication using trusted authority. Upon successful online authnetication, RSU saves vehicles's credentials in side inmemory cache.
+2. Offline Authentication
+   In offline authentication a vehicle performs authentication again with RSU from which it performed authentication before. In offline authentication RSU fetch the credentials from in memory cache and authenticate without contacting TA.
+
+During vehicle's authentication, RSU also checks if it is authenticated with TA or not. If yes RSU attach its own session credentials with the message, other wise RSU performs its authentication as well.
+
+1. Start the Trusted Authority authentication service from ```bash /TrustedAuthority``` directory.
+   ```bash
+   python3 main.py
+   ```
+2. Start the Road Side Unit server from ```bash /Road Side Unit``` directory.
+   ```bash
+   python3 main.py
+   ```
+   RSU wil start with two terminal, one that broadcast its public information like SID and public key and other one to receive authentication requests from vehicles.
+3. Now, to start the authentication from vehicle change the directory to  ```bash /Vehicle``` and start the vehicle service.
+  ```bash
+   python3 main.py 
+   [Vehicle] Searching For Nearby Road Side Unit ...
+   [Vehicle] Received RSU Information from Broadcast:{'SID': '3e4a34803a60d2a0', 'PubKey': '0x8c7b4558ea5b90d7c11e21256f3ef9c2a715df85f5b46a69eb7d89ef3e805fe50'}
+   [Vehicle] Connected To Road Side Unit:3e4a34803a60d2a0
+   ************** VEHICLE MENU ***************
+   1. Perform Authentication
+   2. Perform Data Transfer (V2I)
+   Enter Your Choice (1-2)1
+   [Vehicle] Starting Authentication with Nearest Road Side Unit
+   ```
+
+### 3️⃣ V2I Data Transfer Phase (Vehicle to Infrastructure)
