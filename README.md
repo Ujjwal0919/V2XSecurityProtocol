@@ -215,7 +215,9 @@ After successful authentication, the Vehicle securely transmits encrypted messag
    Enter the message: This is a first message
    [Vehicle] Generating Message  ........
    ```
-[![Watch the video](https://drive.google.com/file/d/1IDYjxO5oKWTNqkMmjWfz7lfvJG1-8idk/view?usp=drive_link)
+### Project Demonstration
+
+[![Watch the video](https://img.youtube.com/vi/dPZ3eMxnsrY/0.jpg)](https://youtu.be/H304DtMPrwM?si=xWb2_cVJSEBghK_C)
 ## ✅ Conclusion
 
 This project presents a prototype implementation of a lightweight and secure authentication mechanism tailored for V2X (Vehicle-to-Everything) communications. By simulating the interactions between Vehicles, Road Side Units (RSUs), and a Trusted Authority (TA), the project demonstrates core security operations such as registration, mutual authentication using Zero-Knowledge Proofs, and secure V2I data transfer.
