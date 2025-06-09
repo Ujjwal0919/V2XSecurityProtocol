@@ -13,7 +13,7 @@ curve = registry.get_curve('brainpoolP256r1') # 256-bit
 
 
 ta_public_key, ta_private_key = "H" , "H"
-TA_REG_SERVER_ADD = '0.0.0.0'
+TA_REG_SERVER_ADD = '127.0.0.1'  # Bind to localhost for security
 TA_REG_SERVER_PORT = 4444
 
 def save_rsu_data(SID, Chall, PubKey):
