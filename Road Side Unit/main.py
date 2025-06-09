@@ -10,7 +10,7 @@ def start_rsu_server():
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.bind((RSU_SERVER_ADD, RSU_SERVER_PORT))
     server_socket.listen()
-    print("****************** RSU Server Started ****************")
+    print("****************** RSU Server Started ********************")
     while True:
         vehicle_socket, client_address = server_socket.accept()
         data = json.loads(vehicle_socket.recv(1024).decode())
