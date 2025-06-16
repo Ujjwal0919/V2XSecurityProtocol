@@ -3,4 +3,4 @@ colorama~=0.4.6
 ecdsa~=0.19.1
 pycryptodome~=3.22.0
 urllib3==1.26.19            
-chardet==3.0.4
+chardet==5.2.0
