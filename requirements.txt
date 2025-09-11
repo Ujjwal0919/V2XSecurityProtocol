@@ -1,6 +1,6 @@
 tinyec~=0.4.0
 colorama~=0.4.6
 ecdsa~=0.19.1
-pycryptodome~=3.22.0
+pycryptodome~=3.23.0
 urllib3==1.26.19            
 chardet==3.0.4
